@@ -1,1 +1,1 @@
-This is a simple shell project enguneered by Onuoha Harrison Chialuka and Bedzra Venessa. This is one of the mant project we are to workon in the ALX SOFTWARE ENGINEERING PROGRAMME.This project is aimed at building a program that immitates the shell
+This is a simple shell project engineered by Onuoha Harrison Chialuka and Bedzra Vanessa. This is one of the many project we are to work on in the ALX SOFTWARE ENGINEERING PROGRAMME.This project is aimed at building a program that immitates the shell
