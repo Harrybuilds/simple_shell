@@ -1,3 +1,5 @@
+#include "shell.h"
+
 /**
  * checkpath - function to verify command
  * @command: command to be verified

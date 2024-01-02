@@ -1,0 +1,386 @@
+/* STANDARD LIBRARIES */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+#include <ctype.h>
+
+
+/**** MACROS ****/
+#define MAX_INPUT_SIZE 1024
+#define MAX_ARGUMENT 32
+
+
+void handlecommandline(char *command, int count);
+void executecommand(char *command, int count, char *path);
+int validatecommand(char *command, int count, char *path);
+int commandreport(char *command, char *path);
+int checkpath(char *command, char *path);
+char **tokenizer(char *str, char *delim);
+char *extract_substring(char *str);
+int processcommand(char *string, char *path);
+char *handlewhitespace(char *str);
+void free_2dbuffer(char **args);
+void freepointer(char *ptr);
+
+
+
+int main(void)
+{
+	char *command = NULL;
+	size_t commandsize = 0;
+	int count = 0;
+	int i = 0;
+
+	while (1)
+	{
+		if (getline(&command, &commandsize, stdin) == -1)
+		{
+			if (command)
+			{
+				freepointer(command);
+			}
+			exit(EXIT_SUCCESS);
+		}
+		command[strcspn(command, "\n")] = '\0';
+		count++;
+
+		printf("input: %s\n", command);
+		handlecommandline(command, count);
+//		test = tokenizer(command, " ");
+	}
+
+	freepointer(command);
+}
+
+
+
+void handlecommandline(char *command, int count)
+{
+	char *argv[10];
+	int index = 0;
+	char *delim = ";&&";
+	char *token = NULL;
+	char *path = NULL;
+
+	if (strcmp(command, "exit") == 0)
+	{
+		if (command)
+		{
+				freepointer(command);
+		}
+		exit(EXIT_SUCCESS);
+	}
+
+	path = getenv("PATH");
+
+	token = strtok(command, delim);
+
+	while (token != NULL)
+	{
+		argv[index] = strdup(token);
+		index += 1;
+		token = strtok(NULL, delim);
+	}
+	argv[index] = NULL;
+
+	index = 0;
+	while (argv[index] != NULL)
+	{
+
+		executecommand(argv[index], count, path);
+		printf("%d: %s\n", index, argv[index]);
+		freepointer(argv[index]);
+		index += 1;
+	}
+}
+
+
+
+
+void executecommand(char *command, int count, char *path)
+{
+	char **argv = NULL;
+	int com_stat = 0;
+	char *com_copy = NULL;
+
+//	com_copy = strdup(command);
+
+	argv = tokenizer(command, " ");
+	printf("commplete command: %s\n", argv[0]);
+	com_stat = validatecommand(argv[0], count, path);
+
+	if (com_stat == 1)
+	{
+		/*call on fork*/
+		printf("\nFork can be called\n");
+	}
+	else
+	{
+		/*report command isnt valid*/
+		printf("\nFork cannot be called\n");
+	}
+	free_2dbuffer(argv);
+}
+
+
+
+
+int validatecommand(char *command, int count, char *path)
+{
+	int com_status = 0;
+
+	if (!command || strlen(command) == 0)
+	{
+		return (-1);
+	}
+
+	if (!path)
+	{
+		return (2);
+	}
+
+	com_status = commandreport(command, path);
+
+	
+	/**
+	 *POSSIBLE OUTCOME | ERRORS | POSSIBILlTIES
+	 *command is NULL or EMPTY
+	 *path is NULL
+	 *command is not a valid command
+	 *command is a valid command
+	 *
+	 *ASSIGNED STATUS OF OUTCOMES
+	 *
+	 *0 - command is valid and exist
+	 *-1 - command is empty
+	 *2 - path is NULL
+	 *1 - command is not valid
+	 *
+	 **/
+	
+	/**
+	 *TODO
+	 *
+	 *verify command is not NULL
+	 *verify path is not NULL
+	 *
+	 *
+	 *call function that takes command, cleanup whitespaces in the command, then process the command to remove prefix '/bin/' if any, then return the leftover characters in the command
+	 *
+	 *tokenize the first part of a copy of the returned leftover characters with space
+	 *
+	 *
+	 *call a function that takes the token returned from tokenizing the command copy as argument, then verify if the command exist, then return an integer based on the outcome of verification
+	 *
+	 *
+	 *if integer return says command exits,then call on fork system call
+	 *
+	 *
+	 *handle both child and parent process
+	 *
+	 *
+	 *
+	 */
+
+	return (com_status);
+}
+
+
+
+int commandreport(char *command, char *path)
+{
+	char *newstr = NULL;
+	int returnval = 0;
+
+	newstr = handlewhitespace(command);
+	returnval = processcommand(newstr, path);
+//	returnval = checkpath(newstr, path);
+	
+	/**
+	 *POSSIBLE OUTCOME | ERRORS | POSSIBILlTIES
+	 *command is not a valid command
+	 *command is a valid command
+	 *
+	 *ASSIGNED STATUS OF OUTCOMES
+	 *
+	 *0 - command is valid and exist
+	 *1 - command is not valid
+	 *
+	 **/
+	return (returnval);
+}
+
+
+
+int checkpath(char *command, char *path)
+{
+	char *paths = NULL;
+	char *path_cpy = NULL;
+	char *token = NULL;
+	int status = 0;
+	char *fullpath = NULL;
+
+	paths = getenv("PATH");
+	path_cpy = strdup(paths);
+
+	printf("Path copy: %s\n", path_cpy);
+	token = strtok(path_cpy, ":");
+	while (token != NULL)
+	{
+		printf("path token inside checkpath function: %s", token);
+		/*fullpath = malloc(strlen(token) + strlen(command) + 2);
+		strcpy(fullpath, token);
+		strcat(fullpath, "/");
+		strcat(fullpath, command);
+
+		if (access(fullpath, F_OK) == 0)
+		{
+			printf("yes");
+			status = 1;
+			break;
+		}
+		else
+		{
+			printf("no");
+			status = 0;
+			}*/
+		freepointer(fullpath);
+	}
+//	freepointer(path_cpy);
+	return (status);
+}
+
+
+int processcommand(char *string, char *path)
+{
+	int com_stat = 0;
+	char *token = NULL;
+	char *newstrcpy = NULL;
+	char *newstr = NULL;
+	char *new_sub = NULL;
+
+	printf("first line of processcommand");
+	if (strncmp(string, "/bin/", 5) == 0)
+	{
+		token = strtok(string, " ");
+		new_sub = extract_substring(token);
+		printf("extracted string at processcommand function:  %s\n", new_sub);
+
+		//com_stat = checkpath(new_sub, path);
+		freepointer(new_sub);
+		return (com_stat);
+	}
+	else
+	{
+		token = strtok(string, " ");
+ 		printf("tokenized string at processcommand function:  %s\n", token);
+		printf("PATH: %s\n", path);
+		com_stat = checkpath(token, path);
+//		freepointer(newstrcpy);
+		return (com_stat);
+	}
+
+}
+	
+
+
+/**
+ * handlewhitespace - function to fix whitespace
+ * @str: string in which whitespace is removed
+ * Return: new fixed string without leading and trailing whitespace
+*/
+char *handlewhitespace(char *str)
+{
+	char *newstr = NULL;
+
+	/*trim leading whitespace*/
+	while (isspace(*str))
+		str++;
+
+	if (*str == 0)
+		return (str);
+
+	/*trim trailling whitespace*/
+	newstr = str + strlen(str) - 1;
+	while (newstr > str && isspace(*newstr))
+		newstr--;
+
+	newstr[1] = '\0';
+
+	return (str);
+}
+
+
+/**
+ *freepointer - function to free dynamic allocated space
+ *@ptr: character pointer to be freed
+ *return: nothing is returned
+*/
+
+void freepointer(char *ptr)
+{
+	free(ptr);
+}
+
+
+char *extract_substring(char *str)
+{
+	const char *prefix = "/bin/";
+	size_t prefix_len = strlen(prefix);
+
+	/* Check if the string starts with the prefix "/bin/"*/
+	if (strncmp(str, prefix, prefix_len) == 0)
+	{
+		/* Return the substring after the prefix "/bin/"*/
+		return strdup(str + prefix_len);
+	}
+
+	/* If the prefix is not found, return NULL or an appropriate message*/
+	return (str);
+}
+
+
+
+char **tokenizer(char *str, char *delim)
+{
+	char **argv;
+	int index = 0;
+	char *token = NULL;
+	
+	printf("malloc called below");
+	argv = malloc(MAX_ARGUMENT * sizeof(char *));
+	if (argv == NULL)
+	{
+		perror("failure to allocate memory");
+		exit(EXIT_FAILURE);
+	}
+
+	token = strtok(str, delim);
+	while (token != NULL && index < MAX_ARGUMENT - 1)
+	{
+		argv[index] = strdup(token);
+		index += 1;
+		token = strtok(NULL, delim);
+	}
+	argv[index] = NULL;
+
+	return (argv);
+}
+
+void free_2dbuffer(char **args)
+{
+	int i;
+
+	if (args == NULL)
+		return;
+
+	for (i = 0; args[i] != NULL; i++)
+	{
+		free(args[i]);
+	}
+	free(args);
+}

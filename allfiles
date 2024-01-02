@@ -1,0 +1,355 @@
+#include "shell.h"
+
+
+void display_prompt(void)
+{
+	printf("($) ");
+}
+
+/**
+ * execute_command - Executes the given command
+ * @command: command to be executed
+ * Return: nothing is returned
+ */
+void execute_command(char *command, int count)
+{
+	char **argv;
+	int status;
+	pid_t pid;
+	char *exec_command;
+	char *path;
+
+	if (strcmp(command, "exit") == 0)
+	{
+		printf("Exiting the shell.\n");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		path = getenv("PATH");
+		/*parse the command using whitespace*/
+		exec_command = processcommand(command, path);
+		if (exec_command != NULL)
+		{
+			argv = tokenizestr(exec_command, " ");
+			pid = fork();
+			if (pid == -1)
+			{
+				perror("fork");
+				exit(EXIT_FAILURE);
+			}
+			else if (pid == 0)
+			{
+			/* child  process */
+				if (execve(argv[0], argv, NULL) == -1)
+				{
+					fprintf(stderr, "%s: %d: %s: %s\n", argv[0], count, command, "not found");
+					exit(errno);
+				}
+			}
+			else
+			{
+				printf("status value returned to parent process before free call: %d\n", WEXITSTATUS(status));
+			freepointer(exec_command);
+			free_2dbuffer(argv);
+			/* Parent process */
+			parentprocess(pid, status, "./hsh");
+			}
+			
+		}
+		else
+		{
+			fprintf(stderr,"%s cannot be found\n", command);
+			/*return a status code*/
+		}
+	}
+	
+}
+
+void parentprocess(pid_t pid, int status, char *command)
+{
+	if (waitpid(pid, &status, 0) == -1)
+	{
+		perror("waitpid");
+		exit(EXIT_FAILURE);
+	}
+	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+	{
+		fprintf(stderr, "./hsh: %s: %s\nstatus: %d, errno: %d\n", command, strerror(errno), status, errno);
+	}
+	else if (WIFSIGNALED(status))
+	{
+		fprintf(stderr, "./hsh: %s: terminated by signal %d\nstatus: %d errno: %d\n", command, WTERMSIG(status), status, errno);
+	}
+}
+
+
+int main(void)
+{
+	char *input = NULL;
+	size_t input_size = 0;
+	int count = 0;
+
+	while (1)
+	{
+		display_prompt();
+
+		if (getline(&input, &input_size, stdin) == -1)
+		{
+			exit(EXIT_SUCCESS);
+		}
+
+		input[strcspn(input, "\n")] = '\0';
+		count++;
+		handlecommandline(input, count);
+
+	}
+	freepointer(input);
+
+	return (0);
+}
+
+
+void handlecommandline(char *string, int count)
+{
+
+	char *argv[10];
+	size_t index = 0;
+	char *delim = ";&&";
+	char *token;
+
+	token = strtok(string, delim);
+
+	while (token != NULL)
+	{
+		argv[index] = token;
+		index += 1;
+		token = strtok(NULL, delim);
+	}
+	argv[index] = NULL;
+
+	index = 0;
+	while (argv[index] != NULL)
+	{
+		execute_command(argv[index], count);
+		index += 1;
+	}
+}
+
+
+char *processcommand(char *string, char *path)
+{
+	char *fullpath;
+	char *token;
+	char *cpy;
+	char *newstr;
+	char *new_sub;
+
+	newstr = handlewhitespace(string);
+
+	if (strncmp(newstr, "/bin/", 5) == 0)
+	{
+		token = strtok(strdup(newstr), " ");
+		printf("token: %s\n",token);
+		new_sub = extract_substring(token);
+		fullpath = get_full_path(new_sub, path);
+		printf("Full path: %s\n", fullpath);
+		if (token == fullpath)
+		{
+			freepointer(new_sub);
+			freepointee(fullpath);
+			return (newstr);
+		}
+		else
+		{
+			errno = 2;
+			return (fullpath);
+		}
+		
+	}
+	else
+	{
+		cpy = malloc(strlen(newstr) + 6);
+		strcpy(cpy, "/bin/");
+		strcat(cpy, "/");
+		strcat(cpy, newstr);
+
+		token = strtok(strdup(cpy), " ");
+		fullpath = get_full_path(newstr, path);
+		if (token == fullpath)
+		{
+			return (cpy);
+		}
+		else
+		{
+			errno = 2;
+			return (fullpath);
+		}
+		
+	}
+
+}
+
+
+
+char **tokenizestr(char *str, char *delim)
+{
+	char **argv;
+	int index = 0;
+	char *token;
+
+	argv = malloc(MAX_ARGUMENT * sizeof(char *));
+	if (argv == NULL)
+	{
+		perror("failure to allocate memory");
+		exit(EXIT_FAILURE);
+	}
+
+	token = strtok(str, delim);
+	while (token != NULL && index < MAX_ARGUMENT - 1)
+	{
+		argv[index] = strdup(token);
+		index += 1;
+		token = strtok(NULL, delim);
+	}
+	argv[index] = NULL;
+
+	return (argv);
+}
+
+void free_2dbuffer(char **args)
+{
+	int i;
+
+	if (args == NULL)
+		return;
+
+	for (i = 0; args[i] != NULL; i++)
+	{
+		free(args[i]);
+	}
+	free(args);
+}
+
+
+char *handlewhitespace(char *str)
+{
+	char *newstr;
+
+	/*trim leading whitespace*/
+	while (isspace(*str))
+		str++;
+
+	if (*str == 0)
+		return (str);
+
+	/*trim trailling whitespace*/
+	newstr = str + strlen(str) - 1;
+	while (newstr > str && isspace(*newstr))
+		newstr--;
+
+	newstr[1] = '\0';
+
+	return (str);
+}
+
+
+void freepointer(char *ptr)
+{
+	free(ptr);
+}
+
+
+char *extract_substring(const char *str)
+{
+    const char *prefix = "/bin/";
+    size_t prefix_len = strlen(prefix);
+
+    // Check if the string starts with the prefix "/bin/"
+    if (strncmp(str, prefix, prefix_len) == 0) {
+        // Return the substring after the prefix "/bin/"
+        return strdup(str + prefix_len);
+    }
+
+    // If the prefix is not found, return NULL or an appropriate message
+    return NULL;
+}
+
+
+char *get_full_path(const char *command, const char *path)
+{
+	char *input_command;
+	char *full_path;
+	char *path_copy;
+
+	if (command == NULL || strlen(command) == 0)
+	{
+		fprintf(stderr, "Invalid command\n");
+		return (NULL);
+	}
+	if (path == NULL || strlen(path) == 0)
+	{
+		fprintf(stderr, "PATH environment variable not found\n");
+		return (NULL);
+OA	}
+	printf("Searching for command: %s\n", command);
+	printf("Current PATH: %s\n", path);
+	/* Duplicate the command string for manipulation*/
+	input_command = strdup(command);
+	if (input_command == NULL)
+	{
+		perror("Error duplicating command");
+		exit(EXIT_FAILURE);
+	}
+	/* Make a copy of PATH for tokenizing*/
+	path_copy = strdup(path);
+	if (path_copy == NULL)
+	{
+		perror("Error duplicating PATH");
+		free(input_command);
+		exit(EXIT_FAILURE);
+	}
+
+	full_path = parsepath(path_copy, input_command);
+
+	return (full_path);
+}
+
+char *parsepath(char *path_copy, char *input_command)
+{
+	char *token;
+	char *full_path;
+	int full_path_len;
+
+	token = strtok(path_copy, ":");
+	while (token != NULL)
+	{
+		/* Construct the full path*/
+		full_path_len = strlen(token) + strlen(input_command) + 2;
+		full_path = malloc(full_path_len); /* Allocate memory for full path*/
+		if (full_path == NULL)
+		{
+			perror("Error allocating space");
+			free(input_command);
+			free(path_copy);
+			exit(EXIT_FAILURE);
+		}
+		snprintf(full_path, full_path_len, "%s/%s", token, input_command);
+		printf("Checking path: %s\n", full_path);
+		/* Check if the file exists*/
+		if (access(full_path, F_OK) == 0)
+		{
+			free(input_command);
+			free(path_copy);
+			return (full_path);
+		}
+		/* Clean up and move to the next directory in PATH*/
+		free(full_path);
+		token = strtok(NULL, ":");
+	}
+	free(input_command);
+	free(path_copy);
+	return (NULL);
+}
+
+

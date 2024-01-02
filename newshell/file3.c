@@ -1,3 +1,5 @@
+#include "shell.h"
+
 /**
  *tokenizer - function to parse a command based of a given delimeter
  * @str: command to be parsed
