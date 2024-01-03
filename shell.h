@@ -4,7 +4,7 @@
 /**** MACROS ****/
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGUMENT 32
-
+extern char **environ;
 
 /* STANDARD LIBRARIES */
 #include <stdio.h>
@@ -15,10 +15,14 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <ctype.h>
+#include <signal.h>
 
 
 
+int interractive();
+int non_interractive();
 int handlecommandline(char *command, int count);
+void prompt(char *promp);
 int executecommand(char *command, int count);
 int validatecommand(char *command);
 int handle_execution(char **argv);

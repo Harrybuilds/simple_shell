@@ -51,7 +51,7 @@ int non_interractive(void)
 
 
 	/* Read input from the terminal*/
-	bytes = read(STDOUT_FILENO, buffer, sizeof(buffer));
+	bytes = read(STDIN_FILENO, buffer, sizeof(buffer));
 
 	if (bytes == -1)
 	{
@@ -59,11 +59,6 @@ int non_interractive(void)
 		return (1);
 	}
 	buffer[bytes] = '\0';
-
-	if (isatty(STDIN_FILENO))
-	{
-		prompt("₦");
-	}
 
 	count++;
 
