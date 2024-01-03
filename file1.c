@@ -1,6 +1,40 @@
 #include "shell.h"
 
 /**
+ * main - program execution
+ * @void: nothing is expected as argument
+ * Return: the status of tge command called
+ */
+int main(void)
+{
+	char *command = NULL;
+	size_t commandsize = 0;
+	int count = 0;
+	int com_stat = 0;
+
+	while (1)
+	{
+		printf("($) ");
+		if (getline(&command, &commandsize, stdin) == -1)
+		{
+			if (command)
+			{
+				freepointer(command);
+			}
+			exit(com_stat);
+		}
+		command[strcspn(command, "\n")] = '\0';
+		count++;
+
+		com_stat = handlecommandline(command, count);
+	}
+
+	freepointer(command);
+	return (com_stat);
+}
+
+
+/**
  * handlecommandline - function to takecare of multiple commands
  * @command: command to be handled
  * @count: count of commands passed
@@ -10,7 +44,7 @@ int handlecommandline(char *command, int count)
 {
 	char *argv[MAX_INPUT_SIZE];
 	int index = 0;
-	char *delim = ";&&\n";
+	char *delim = ";&&";
 	char *token = NULL;
 	int com_stat = 0;
 
@@ -22,7 +56,6 @@ int handlecommandline(char *command, int count)
 		}
 		exit(EXIT_SUCCESS);
 	}
-
 
 	token = strtok(command, delim);
 
@@ -40,7 +73,8 @@ int handlecommandline(char *command, int count)
 		com_stat = executecommand(argv[index], count);
 		freepointer(argv[index]);
 		index += 1;
-
+		printf("command status: %d\n", com_stat);
+		return (com_stat);
 	}
 	return (com_stat);
 }
@@ -59,27 +93,18 @@ int executecommand(char *command, int count)
 
 	argv = tokenizer(command, " ");
 
-	if (strcmp(argv[0], "exit") == 0)
-	{
-/*		if (argv)*/
-
-		free_2dbuffer(argv);
-		freepointer(command);
-		exit(EXIT_SUCCESS);
-	}
 	com_stat = validatecommand(argv[0]);
 
 	if (com_stat == 1)
 	{
-		/*Fork() can be called*/
 		com_stat = handle_execution(argv);
 		/*set the desired return value*/
 	}
 	else
 	{
 		/*report command isnt valid*/
-		/*Fork() cannot be called*/
-		fprintf(stderr, "./hsh: %s: %d not found", command, count);
+		/*"\nFork cannot be called\n")*/
+		fprintf(stderr, "./hsh: %s: %d cannot be found", command, count);
 
 		/*set the desired return value*/
 		errno = 127;

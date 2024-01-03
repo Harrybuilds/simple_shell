@@ -14,7 +14,7 @@ int interractive(void)
 
 	while (1)
 	{
-		printf("($) ");
+		prompt("($ )");
 		if (getline(&command, &commandsize, stdin) == -1)
 		{
 			if (command)
@@ -49,8 +49,9 @@ int non_interractive(void)
 	int count = 0;
 	int com_stat = 0;
 
+
 	/* Read input from the terminal*/
-	bytes = read(STDIN_FILENO, buffer, sizeof(buffer));
+	bytes = read(STDOUT_FILENO, buffer, sizeof(buffer));
 
 	if (bytes == -1)
 	{
@@ -59,11 +60,26 @@ int non_interractive(void)
 	}
 	buffer[bytes] = '\0';
 
+	if (isatty(STDIN_FILENO))
+	{
+		prompt("₦");
+	}
+
 	count++;
 
 	com_stat = handlecommandline(buffer, count);
 
-	/* Display what was read from the terminal*/
 	return (com_stat);
 }
 
+
+
+/**
+ * prompt - function to print prompt
+ * @promp: string to be printed as prompt
+ * Return: nothing is returned
+*/
+void prompt(char *promp)
+{
+	printf("%s ", promp);
+}

@@ -62,7 +62,6 @@ int handle_execution(char **argv)
 {
 	int status = 0;
 	pid_t pid;
-	char **env = environ;
 	char *command = NULL;
 
 	command = prefixcommand(argv[0]);
@@ -75,7 +74,7 @@ int handle_execution(char **argv)
 	}
 	else if (pid == 0)
 	{
-		execve(command, argv, env);
+		execve(command, argv, NULL);
 		/*if execve reaches here, execve failed*/
 		/*errno holds the specific code and message*/
 		if (command)
@@ -90,7 +89,7 @@ int handle_execution(char **argv)
 		waitpid(pid, &status, 0);
 		if (WIFEXITED(status))
 		{
-/*			printf("Child process exited with status %d\n", WEXITSTATUS(status));*/
+			printf("Child process exited with status %d\n", WEXITSTATUS(status));
 			return (WEXITSTATUS(status));
 		}
 		else
