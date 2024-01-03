@@ -1,0 +1,32 @@
+/**
+ *POSSIBLE OUTCOME | ERRORS | POSSIBILlTIES
+ *command is NULL or EMPTY
+ *path is NULL
+ *command is not a valid command
+ *command is a valid command
+ */
+
+/**
+ *ASSIGNED STATUS OF OUTCOMES
+ *0 - command is valid and exist
+ *-1 - command is empty
+ *1 - command is not valid
+ **/
+
+/**
+ *TODO
+ *verify command is not NULL
+ *verify path is not NULL
+ */
+
+/**
+ *call function that takes command, cleanup whitespaces in the command, then process the command to remove prefix '/bin/' if any, then return the leftover characters in the command
+ *
+ *tokenize the first part of a copy of the returned leftover characters with space
+ *
+ *call a function that takes the token returned from tokenizing the command copy as argument, then verify if the command exist, then return an integer based on the outcome of verification
+ *
+ *if integer return says command exits,then call on fork system call
+ *
+ *handle both child and parent process
+ */

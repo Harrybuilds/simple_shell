@@ -6,6 +6,7 @@
 #define MAX_ARGUMENT 32
 #define BUFFER_SIZE 1024
 
+
 /* STANDARD LIBRARIES */
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,9 +17,16 @@
 #include <errno.h>
 #include <ctype.h>
 
+
+int validatecommand(char *command);
+int handle_execution(char **argv);
+int commandreport(char *command);
+int checkpath(char *command);
+char *extract_substring(char *str);
+char *handlewhitespace(char *str);
+char *prefixcommand(char *command);
 void display_prompt(void);
 void handlecommandline(char *string, int count);
-void freepointer(char *ptr);
 void execute_command(char *command, int count);
 void parentprocess(pid_t pid, int status, char *command);
 char *processcommand(char *string, char *path);
