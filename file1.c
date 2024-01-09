@@ -79,7 +79,7 @@ int executecommand(char *command, int count)
 	{
 		/*report command isnt valid*/
 		/*Fork() cannot be called*/
-		fprintf(stderr, "./hsh: %s: %d not found", command, count);
+		fprintf(stderr, "./hsh: %d: %s not found\n", count, command);
 
 		/*set the desired return value*/
 		errno = 127;
