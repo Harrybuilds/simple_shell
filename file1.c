@@ -120,8 +120,8 @@ int commandreport(char *command)
 	char *newstr = NULL;
 	int returval = 0;
 
-	newstr = handlewhitespace(command);
-	returval = processcommand(newstr);
+//	newstr = handlewhitespace(command);
+	returval = processcommand(command);
 
 	/**
 	 *POSSIBLE OUTCOME | ERRORS | POSSIBILlTIES
