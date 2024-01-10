@@ -3,17 +3,16 @@
 /**
  * checkpath - function to verify command
  * @command: command to be verified
+ * @paths: environment variable path
  * Return: an integer that represent command status
  */
-int checkpath(char *command)
+int checkpath(char *command, char *paths)
 {
-	char *paths = NULL;
 	char *path_cpy = NULL;
 	char *token = NULL;
 	int status = 0;
 	char *fullpath = NULL;
 
-	paths = getenv("PATH");
 	path_cpy = strdup(paths);
 
 	token = strtok(path_cpy, ":");
@@ -46,9 +45,10 @@ int checkpath(char *command)
 /**
  * processcommand - function to cleanup the command
  * @string: command to be cleaned up
+ * @paths: environment variable path
  * Return: an integer value representing where command is valid or not
  */
-int processcommand(char *string)
+int processcommand(char *string, char *paths)
 {
 	int com_stat = 0;
 	char *token = NULL;
@@ -58,14 +58,14 @@ int processcommand(char *string)
 	{
 		token = strtok(string, " ");
 		new_sub = extract_substring(token);
-		com_stat = checkpath(new_sub);
+		com_stat = checkpath(new_sub, paths);
 		freepointer(new_sub);
 		return (com_stat);
 	}
 	else
 	{
 		token = strtok(string, " ");
-		com_stat = checkpath(token);
+		com_stat = checkpath(token, paths);
 
 		return (com_stat);
 	}

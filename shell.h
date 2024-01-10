@@ -21,20 +21,20 @@ extern char **environ;
 
 int interractive();
 int non_interractive();
-int handlecommandline(char *command, int count);
+int handlecommandline(char *command, int count, char *paths);
 void prompt(char *promp);
-int executecommand(char *command, int count);
-int validatecommand(char *command);
+int executecommand(char *command, int count, char *paths);
+int validatecommand(char *command, char *paths);
 int handle_execution(char **argv);
-int commandreport(char *command);
-int checkpath(char *command);
+int commandreport(char *command, char *paths);
+int checkpath(char *command, char *paths);
 char **tokenizer(char *str, char *delim);
 char *extract_substring(char *str);
-int processcommand(char *string);
+int processcommand(char *string, char *paths);
 char *handlewhitespace(char *str);
 void free_2dbuffer(char **args);
 void freepointer(char *ptr);
 char *prefixcommand(char *command);
-
+char *getpath(char **env);
 
 #endif /* SHELL_H */

@@ -11,6 +11,7 @@ int interractive(void)
 	size_t commandsize = 0;
 	int count = 0;
 	int com_stat = 0;
+	char *paths = getenv("PATH") ? getenv("PATH") : "/bin/";
 
 	while (1)
 	{
@@ -25,7 +26,7 @@ int interractive(void)
 		command[strcspn(command, "\n")] = '\0';
 		count++;
 
-		com_stat = handlecommandline(command, count);
+		com_stat = handlecommandline(command, count, paths);
 	}
 
 	freepointer(command);
@@ -47,6 +48,7 @@ int non_interractive(void)
 	ssize_t bytes;
 	int count = 0;
 	int com_stat = 0;
+	char *paths = getenv("PATH") ? getenv("PATH") : "/bin/";
 
 
 	/* Read input from the terminal*/
@@ -61,7 +63,7 @@ int non_interractive(void)
 
 	count++;
 
-	com_stat = handlecommandline(buffer, count);
+	com_stat = handlecommandline(buffer, count, paths);
 
 	return (com_stat);
 }
@@ -77,3 +79,7 @@ void prompt(char *promp)
 {
 	printf("%s ", promp);
 }
+
+
+
+

@@ -4,9 +4,10 @@
  * handlecommandline - function to takecare of multiple commands
  * @command: command to be handled
  * @count: count of commands passed
+ * @paths: environment variable path
 3 * Return: integer represent command stat
 */
-int handlecommandline(char *command, int count)
+int handlecommandline(char *command, int count, char *paths)
 {
 	char *argv[MAX_INPUT_SIZE];
 	int index = 0;
@@ -14,6 +15,7 @@ int handlecommandline(char *command, int count)
 	char *token = NULL;
 	char *nospacecom = NULL;
 	int com_stat = 0;
+
 
 	nospacecom = handlewhitespace(command);
 	if (strcmp(nospacecom, "exit") == 0)
@@ -37,7 +39,7 @@ int handlecommandline(char *command, int count)
 	index = 0;
 	while (argv[index] != NULL)
 	{
-		com_stat = executecommand(argv[index], count);
+		com_stat = executecommand(argv[index], count, paths);
 		freepointer(argv[index]);
 		index += 1;
 
@@ -50,9 +52,10 @@ int handlecommandline(char *command, int count)
  * executecommand - function to begin command execution
  * @command: command to be executed
  * @count: count of commands passed
+ * @paths: environmebt variable path
  * Return: integer value representing command execution state
 */
-int executecommand(char *command, int count)
+int executecommand(char *command, int count, char *paths)
 {
 	char **argv = NULL;
 	int com_stat = 0;
@@ -69,7 +72,7 @@ int executecommand(char *command, int count)
 	}
 	else if (strcmp(argv[0], "./hbtn_ls") == 0)
 		argv[0] = strdup("/bin/ls");
-	com_stat = validatecommand(argv[0]);
+	com_stat = validatecommand(argv[0], paths);
 
 	if (com_stat == 1)
 	{
@@ -81,7 +84,7 @@ int executecommand(char *command, int count)
 	{
 		/*report command isnt valid*/
 		/*Fork() cannot be called*/
-		fprintf(stderr, "./hsh: %d: %s not found\n", count, command);
+		fprintf(stderr, "./hsh: %d: %s: not found\n", count, command);
 
 		/*set the desired return value*/
 		errno = 127;
@@ -95,9 +98,10 @@ int executecommand(char *command, int count)
 /**
  *validatecommand - function to verify command
  * @command: command to be verified
+ * @paths: environmebt variable path
  * Return: integer value that represent the command state
 */
-int validatecommand(char *command)
+int validatecommand(char *command, char *paths)
 {
 	int com_status = 0;
 
@@ -106,7 +110,7 @@ int validatecommand(char *command)
 		return (-1);
 	}
 
-	com_status = commandreport(command);
+	com_status = commandreport(command, paths);
 
 	return (com_status);
 }
@@ -115,15 +119,16 @@ int validatecommand(char *command)
 /**
  * commandreport - function to call other function that validates command
  * @command: command to be validated
+ * @paths: environmebt variable path
  * Return: integer value representing command state
 */
-int commandreport(char *command)
+int commandreport(char *command, char *paths)
 {
 	char *newstr = NULL;
 	int returval = 0;
 
 	newstr = handlewhitespace(command);
-	returval = processcommand(newstr);
+	returval = processcommand(newstr, paths);
 
 	/**
 	 *POSSIBLE OUTCOME | ERRORS | POSSIBILlTIES
