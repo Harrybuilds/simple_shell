@@ -67,6 +67,8 @@ int executecommand(char *command, int count)
 		freepointer(command);
 		exit(EXIT_SUCCESS);
 	}
+	else if (strcmp(argv[0], "./hbtn_ls") == 0)
+		argv[0] = strdup("/bin/ls");
 	com_stat = validatecommand(argv[0]);
 
 	if (com_stat == 1)

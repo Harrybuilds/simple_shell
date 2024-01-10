@@ -11,13 +11,9 @@ int interractive(void)
 	size_t commandsize = 0;
 	int count = 0;
 	int com_stat = 0;
-	int prompt_stat = 0;
 
 	while (1)
-	{       
-		prompt_stat = 1;
-		if (prompt_stat == 1)
-		   prompt("($ )");
+	{
 		if (getline(&command, &commandsize, stdin) == -1)
 		{
 			if (command)
