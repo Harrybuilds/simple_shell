@@ -1,3 +1,5 @@
+
+
 #include "shell.h"
 
 /**
@@ -71,7 +73,10 @@ int executecommand(char *command, int count, char *paths)
 		exit(EXIT_SUCCESS);
 	}
 	else if (strcmp(argv[0], "./hbtn_ls") == 0)
+	{
+		freepointer(argv[0]);
 		argv[0] = strdup("/bin/ls");
+	}
 	com_stat = validatecommand(argv[0], paths);
 
 	if (com_stat == 1)

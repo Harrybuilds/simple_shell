@@ -19,8 +19,8 @@ extern char **environ;
 
 
 
-int interractive();
-int non_interractive();
+int interractive(void);
+int non_interractive(void);
 int handlecommandline(char *command, int count, char *paths);
 void prompt(char *promp);
 int executecommand(char *command, int count, char *paths);
