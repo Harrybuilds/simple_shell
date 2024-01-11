@@ -36,5 +36,6 @@ void free_2dbuffer(char **args);
 void freepointer(char *ptr);
 char *prefixcommand(char *command);
 char *getpath(char **env);
+int containsHbtnLs(char *str);
 
 #endif /* SHELL_H */

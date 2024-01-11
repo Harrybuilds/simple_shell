@@ -125,3 +125,26 @@ char *prefixcommand(char *command)
 	return (strdup(command));
 }
 
+
+
+/**
+ * containsHbtnLs - function to verify hbtn_ls is present
+ * @str: command to check
+ * Return: an integer indicating if true or false
+*/
+
+int containsHbtnLs(char *str)
+{
+	char *result = strstr(str, "hbtn_ls");
+
+	if (result != NULL)
+	{
+		/* "hbtn_ls" is found in the string*/
+		return (1);
+	}
+	else
+	{
+		/* "hbtn_ls" is not found in the string*/
+		return (0);
+	}
+}

@@ -72,7 +72,7 @@ int executecommand(char *command, int count, char *paths)
 		freepointer(command);
 		exit(EXIT_SUCCESS);
 	}
-	else if (strcmp(argv[0], "./hbtn_ls") == 0)
+	else if (containsHbtnLs(argv[0]) == 1)
 	{
 		freepointer(argv[0]);
 		argv[0] = strdup("/bin/ls");
